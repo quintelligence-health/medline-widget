@@ -1,0 +1,58 @@
+.container-quint-widget .container-quint-widget td, .container-quint-widget div, .container-quint-widget .p, .container-quint-widget a {
+    font-family: arial,sans-serif;
+}
+
+.container-quint-widget a {
+    color: #0000CC;
+    text-decoration: underline;
+}
+
+.container-quint-widget a:hover {
+    cursor: pointer;
+}
+
+.container-quint-widget a:visited {
+    color: #551A8B;
+}
+
+.container-quint-widget .widget-container {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.container-quint-widget #tbl-search {
+    width: 710px;
+}
+
+.container-quint-widget #tbl-search, .container-quint-widget tr, .container-quint-widget dt {
+    text-align: center;
+}
+.container-quint-widget tr {
+    vertical-align: top;
+}
+.container-quint-widget td {
+    vertical-align: bottom;
+}
+
+.container-quint-widget #center {
+    text-align: center;
+    padding: auto;
+}
+
+.container-quint-widget #center * {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.container-quint-widget #cluster_canvas {
+    width: 400px;
+    height: 400px;
+}
+
+.container-quint-widget .loading {
+    background: url('../img/ajax-loader.gif') no-repeat center;
+    width: 300px;
+    height: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}

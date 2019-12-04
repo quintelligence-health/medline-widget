@@ -1,0 +1,32 @@
+#tt {
+    position: absolute;
+    display: block;
+    z-index: 100;
+    background-color: black;
+    color: white;
+    font-size: 10px;
+    padding: 10px;
+
+    word-break:break-all;
+    border-radius: 10px;
+
+    -webkit-user-select: none;  /* Chrome all / Safari all */
+    -moz-user-select: none;     /* Firefox all */
+    -ms-user-select: none;      /* IE 10+ */
+
+    /* No support for these yet, use at own risk */
+    -o-user-select: none;
+    user-select: none;
+}
+#tttop {
+    display: block;
+    overflow: hidden;
+}
+#ttcont {
+    display: block;
+    margin-left: 5px;
+}
+#ttbot {
+    display: block;
+    overflow: hidden;
+}

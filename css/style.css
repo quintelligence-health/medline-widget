@@ -1,0 +1,49 @@
+.container-quint-widget .container {
+    overflow-y: auto;
+}
+
+.container-quint-widget .widget-container {
+    position: relative;
+}
+
+.container-quint-widget .about {
+    font-size: 11px;
+}
+
+.container-quint-widget .item_title {
+    font-size: 16px;
+    font-weight: normal;
+    margin: 0px;
+}
+
+.container-quint-widget article {
+    margin: 1em 0 0 0;
+    font-family: arial, sans-serif;
+}
+
+.container-quint-widget .description_table {
+    width: 34em;
+    border-width: 0px;
+    margin: 0px;
+    padding: 0px;
+    text-align: left;
+    font-size: 13px;
+}
+
+.container-quint-widget .url, .url:link {
+    font-size: 14px;
+    color: green;
+}
+
+.container-quint-widget .widget-wrapper {
+    height: calc(100% - 73px);
+    overflow-y: auto;
+}
+
+.container-quint-widget .div-keywords-wrapper {
+    height: 300px;
+}
+
+.container-quint-widget .div-keywords-wrapper .keywords-wrapper {
+    height: 100%;
+}
