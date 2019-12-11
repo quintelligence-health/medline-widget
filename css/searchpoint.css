@@ -2,16 +2,16 @@
     font-family: arial,sans-serif;
 }
 
-.container-quint-widget a {
+.container-quint-widget .div-items-wrapper a {
     color: #0000CC;
     text-decoration: underline;
 }
 
-.container-quint-widget a:hover {
+.container-quint-widget .div-items-wrapper a:hover {
     cursor: pointer;
 }
 
-.container-quint-widget a:visited {
+.container-quint-widget .div-items-wrapper a:visited {
     color: #551A8B;
 }
 

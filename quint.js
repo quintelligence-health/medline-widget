@@ -189,6 +189,11 @@ Quint.SearchPoint.prototype.init = function (opts, callback) {
 
             // draw the items
             var items = data;
+
+            if (items.length > 0) {
+                itemsContainer.append('<div class="span-sample-notification">Showing a sample of 200 results.</div>')
+            }
+
             for (var itemN = 0; itemN < items.length; ++itemN) {
                 var item = items[itemN];
 
@@ -286,12 +291,39 @@ Quint.SearchPoint.prototype.init = function (opts, callback) {
         var query = keywordInput.val();
         fetchResults(query);
     })
+    {
+        let stopPropagation = function (event) {
+            event.stopPropagation();
+            if (event.cancelBubble != null) { event.cancelBubble = true;  }
+            return false;
+        }
+
+        keywordInput.keypress(function (e) {
+            if (e.which != 13) { return; }
+            return stopPropagation(e);
+        })
+        keywordInput.keyup(function (e) {
+            if (e.which != 13) { return; }
+
+            var query = keywordInput.val();
+            fetchResults(query);
+            return stopPropagation(e);
+        })
+        keywordInput.keydown(function (e) {
+            if (e.which != 13) { return; }
+            return stopPropagation(e);
+        })
+    }
+
+    self._sp = sp;
 
     callback();
 }
 
 Quint.SearchPoint.prototype.resize = function (width, height) {
     var self = this;
+
+    var sp = self._sp;
 
     var containerId = self._containerId;
     var container = $('#' + containerId);
@@ -303,7 +335,7 @@ Quint.SearchPoint.prototype.resize = function (width, height) {
     // redraw searchpoint
     var spWidth = self._widgetW;
     var spHeight = self._widgetH;
-    var containerPadding = 3;   // the number 3 is measured in chrome
+    var containerPadding = 30;   // measured in Chrome
 
     if (spWidth > containerW - containerPadding) { 
         // resize searchpoint
@@ -315,6 +347,9 @@ Quint.SearchPoint.prototype.resize = function (width, height) {
     spContainer.css('height', spWidth);
     spContainer.children('canvas').css('width', spWidth);
     spContainer.children('canvas').css('height', spHeight);
+
+    sp.setSize(spWidth, spHeight);
+
 
     // redraw the items
     var widgetW = spWidth;
@@ -376,7 +411,18 @@ Quint.ErNews.prototype.init = function (opts, callback) {
 
     var topicKey = opts.topicKey;
 
-    if (topicKey == null) { topicKey = 'er-1'; }
+    // if (topicKey == null) { topicKey = 'er-1'; }
+    var persistParams = function (params) {
+        var widgetNumber = $('#' + containerId).data('itmnumber');
+        var selectedWidget = $.grep(midasWidget.allWidgets, function (e) {
+            return e.widgetNumber === widgetNumber;
+        });
+
+        if (typeof selectedWidget[0].widgetMeta.parameters === "string") {
+            selectedWidget[0].widgetMeta.parameters = JSON.parse(selectedWidget[0].widgetMeta.parameters)
+        }
+        selectedWidget[0].widgetMeta.parameters = Object.assign(selectedWidget[0].widgetMeta.parameters, params);
+    }
 
     // create the UI
     var container = $('#' + containerId);
@@ -387,7 +433,8 @@ Quint.ErNews.prototype.init = function (opts, callback) {
     var widgetWrapper = $('<div class="widget-wrapper" />');
 
     var inputForm = $('<form />');
-    var inputContainer = $('<div class="div-input-wrapper form-group" />');
+    var inputRow = $('<div class="form-row" />');
+    var inputContainer = $('<div class="div-input-wrapper form-group col-md-10" />');
     var keywordsContainer = $('<div class="div-keywords-wrapper" />');
     var itemsContainer = $('<div class="div-items-wrapper" style="overflow-y: auto;" />');
 
@@ -398,22 +445,35 @@ Quint.ErNews.prototype.init = function (opts, callback) {
         if (value == topicKey) { option.attr('selected', 'selected'); }
         input.append(option);
     }
+    var hideDefaultOption = function () {
+        defaultOption.css('display', 'none');
+    }
+
+    var defaultOption = $('<option disabled selected value>Choose topic</option>');
+    input.append(defaultOption);
+
     addOption('er-1', 'MIDAS');
     addOption('er-2', 'EUS');
     addOption('er-3', 'FIN');
     addOption('er-4', 'IRE');
     addOption('er-5', 'NIR');
 
-    var configureWrapper = $('<div class="text-right small" />');
-    var configureLink = $('<a href="#" target="_blank">Configure</a>');
+    if (topicKey != null) { hideDefaultOption(); }
+
+    var configureWrapper = $('<div class="form-group col-md-2" />');
+    var configureLink = $('<a href="#" role="button" class="btn btn-primary" target="_blank">Configure</a>');
 
     configureWrapper.append(configureLink);
 
     // assemble the UI
     inputContainer.append(input);
-    inputContainer.append(configureWrapper);
 
-    inputForm.append(inputContainer);
+    inputRow.append(inputContainer);
+    inputRow.append(configureWrapper);
+
+    // inputContainer.append(configureWrapper);
+
+    inputForm.append(inputRow);
 
     widgetWrapper.append(keywordsContainer);
     widgetWrapper.append(itemsContainer);
@@ -431,6 +491,8 @@ Quint.ErNews.prototype.init = function (opts, callback) {
 
         var configLink = configLinkMap[topicKey];
         configureLink.attr('href', configLink);
+
+        persistParams({ topicKey: topicKey });
 
         self._fetchResults(topicKey, function (e, data) {
             if (e != null) return callback(e);
@@ -453,6 +515,7 @@ Quint.ErNews.prototype.init = function (opts, callback) {
 
     // draw the results
     input.change(function () {
+        hideDefaultOption();
         refreshResults();
     })
 

@@ -15,6 +15,9 @@ function SearchPoint(opts) {
     var fetchItemsFun = opts.fetchItems;
     var fetchKeywordsFun = opts.fetchKeywords;
 
+    var scaleX = 1;
+    var scaleY = 1;
+
     var listCont = null;
     var service = null;
     var stages = null;
@@ -25,8 +28,8 @@ function SearchPoint(opts) {
 
     // var minKwSize = 8;
     // var maxKwSize = 12;
-    var minKwSize = 10;
-    var maxKwSize = 16;
+    var minKwSize = 18;
+    var maxKwSize = 32;
 
     var centerClustColor = [212,0,90];  // light gray
 
@@ -281,6 +284,16 @@ function SearchPoint(opts) {
 
                             for (var clustIdx = 0; clustIdx < nClusts; clustIdx++) {
                                 var cluster = clusters[clustIdx];
+
+                                cluster.kwords = cluster.kwords.slice(0, 8);
+
+                                var kwords = cluster.kwords;
+                                for (var kwN = 0; kwN < kwords.length; ++kwN) {
+                                    var kwObj = kwords[kwN];
+                                    if (kwObj.text != null) {
+                                        kwObj.text = kwObj.text.charAt(0).toUpperCase() + kwObj.text.substring(1).toLowerCase();
+                                    }
+                                }
 
                                 // normalize keyword frequencies
                                 var maxFq = -1;
@@ -717,8 +730,8 @@ function SearchPoint(opts) {
         img.onload = function () {
             var prop = new Kinetic.Image({
                 image: img,
-                x: (that.stage.width - img.width) / 2,
-                y: (that.stage.height - img.height) / 2,
+                x: 0.5*scaleX*(that.stage.width - img.width),
+                y: 0.5*scaleY*(that.stage.height - img.height),
                 width: img.width,
                 height: img.height,
                 draggable: true
@@ -819,7 +832,9 @@ function SearchPoint(opts) {
                             var text = kword.text;
                             var size = kword.height;
 
-                            context.font = size + 'px GroteskDS75';
+                            if (text != null) { xt = text.charAt(0).toUpperCase() + text.substring(1).toLowerCase(); }
+
+                            context.font = size + 'px Helvetica';
                             context.textAlign = 'center';
                             context.textBaseline = 'middle';
 
@@ -916,6 +931,14 @@ function SearchPoint(opts) {
             forward: null,
             center: null,
 
+            setSize: function (width, height) {
+                scaleX = width / stageW;
+                scaleY = height / stageH;
+
+                that.stage.setSize(width, height);
+                that.stage.setScale(scaleX, scaleY);
+            },
+
             //returns a point which represents servrer coordinates of x, y
             toServerCoords: function (x, y) {
                 var minX = that.width / 4;
@@ -942,46 +965,29 @@ function SearchPoint(opts) {
 
             //adds buttons to the stage
             initButtons: function () {
-                var centerImg = new Image();
+                var centerBtn = $('<button class="btn btn-primary">Re-center</button>');
+                centerBtn.css('position', 'absolute');
+                centerBtn.css('left', '50%');
+                centerBtn.css('bottom', '15px');
+                centerBtn.css('transform', 'translateX(-50%)');
 
-                centerImg.src = "scripts/quint/img/reset-btn.png";
+                centerBtn.click(function () {
+                    var currX = that.target.getX();
+                    var currY = that.target.getY();
+                    var endPos = Point((that.width - that.target.width) / 2, (that.height - that.target.height) / 2);
 
-                centerImg.onload = function () {
-                    var prop = new Kinetic.Image({
-                        image: centerImg,
-                        x: .5 * centerImg.width,
-                        y: that.height - centerImg.height - that.margin,
-                        width: centerImg.width,
-                        height: centerImg.height,
-                        alpha: 1
-                    });
+                    if (currX != endPos.x || currY != endPos.y) {
+                        that.history.addItem(endPos);
 
-                    prop.on("mouseover", function () {
-                        document.body.style.cursor = "pointer";
-                        prop.setAlpha(0.8);
-                        that.drawProps();
-                    });
-                    prop.on("mouseout", function () {
-                        document.body.style.cursor = "default";
-                        prop.setAlpha(1);
-                        that.drawProps();
-                    });
+                        var dstX = 0.5*that.width*scaleX;
+                        var dstY = 0.5*that.height*scaleY;
 
-                    prop.on("mousedown touchend", function () {
-                        var currX = that.target.getX();
-                        var currY = that.target.getY();
-                        var endPos = Point((that.width - that.target.width) / 2, (that.height - that.target.height) / 2);
+                        that.moveTarget(dstX, dstY, false);
+                    }
+                })
 
-                        if (currX != endPos.x || currY != endPos.y) {
-                            that.history.addItem(endPos);
-                            that.moveTarget(that.width / 2, that.height / 2, false);
-                        }
-                    });
-
-                    that.center = prop;
-                    that.addProp(prop);
-                    that.drawProps();
-                };
+                var wrapper = $('#' + containerId);
+                wrapper.append(centerBtn);
             },
 
             //adds clusters to the stage
@@ -1090,14 +1096,14 @@ function SearchPoint(opts) {
                 if (target.isDragging())
                     return;
 
-                var maxH = that.height - Math.max(that.center.height, 0) - that.margin;
+                var maxH = that.height - 34 - that.margin;
                 if (y < maxH && !target.isDragging()) {     //if the user didn't press on the menu
                     // animate the ball
                     target.hideTooltip();
 
                     //calculate start/end positions
                     var startPos = Point(target.getX(), target.getY());
-                    var endPos = Point(x - that.target.width / 2, y - that.target.height / 2);
+                    var endPos = Point(x - 0.5*scaleX*that.target.width, y - 0.5*scaleY*that.target.height);
 
                     //calculate the distance and direction
                     var dirV = Point(endPos.x - startPos.x, endPos.y - startPos.y);
@@ -1252,7 +1258,7 @@ function SearchPoint(opts) {
 
                 that.initClusters();
                 if (that.target.prop != null)
-                    that.target.setPosition((that.width - that.target.width) / 2, (that.height - that.target.height) / 2);
+                    that.target.setPosition(0.5*scaleX*(that.width - that.target.width), 0.5*scaleY*(that.height - that.target.height));
 
                 if (that.center != null) that.addProp(that.center);
                 if (that.back != null) that.addProp(that.back);
@@ -1555,6 +1561,12 @@ function SearchPoint(opts) {
 
     return {
         // list: ListController,
+        setSize: function (width, height) {
+            for (var stageN = 0; stageN < stages.length; ++stageN) {
+                var stage = stages[stageN];
+                stage.setSize(width, height);
+            }
+        },
         setWidget: function () {
             service.onData.apply(service, arguments);
         },
